@@ -22,6 +22,9 @@ Commands after wake word:
 - `open youtube.com` (opens Chrome, focuses address bar, types, enters slowly)
 - `open this app discord` (natural app phrase supported)
 - `search best laptops 2026` (opens Chrome and types query slowly)
+- `open notepad and type i am cool`
+- `open cmd and type whoami`
+- `what is the time`
 - `run pwd`
 
 Natural phrases also work:
@@ -29,9 +32,13 @@ Natural phrases also work:
 - `jarvis open discord`
 - `jarvis open this app spotify`
 
-### Case sensitivity fixed
+### Case sensitivity + normal command fixes
 
-App names are normalized, so `open Notepad`, `open notepad`, and even bare `notepad` are treated the same.
+App names are normalized, so `open Notepad`, `open notepad`, and bare `notepad` are treated the same.
+
+Compound commands now work:
+- `open notepad and type i am cool`
+- `open cmd and type whoami`
 
 ## UI
 
