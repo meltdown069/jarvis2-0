@@ -11,6 +11,7 @@ import time
 import urllib.parse
 import webbrowser
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 import tkinter as tk
 
@@ -134,6 +135,7 @@ class JarvisAssistant:
         candidates: list[Path] = []
         if self.config.model_path:
             candidates.append(self.config.model_path)
+
         env_value = os.environ.get("VOSK_MODEL_PATH")
         if env_value:
             candidates.append(Path(env_value))
@@ -255,7 +257,7 @@ class JarvisAssistant:
         cleaned = self._cleanup_command_text(text)
         if cleaned.startswith(WAKE_WORD):
             cleaned = cleaned[len(WAKE_WORD) :].strip()
-        for phrase in ["search ", "open ", "run "]:
+        for phrase in ["search ", "open ", "run ", "what is the time", "what s the time", "time"]:
             idx = cleaned.find(phrase)
             if idx != -1:
                 return cleaned[idx:].strip()
@@ -299,8 +301,31 @@ class JarvisAssistant:
         }
         return alias_map.get(target, target)
 
+    def _extract_open_and_type(self, command: str) -> tuple[str, str] | None:
+        match = re.match(r"^open\s+(.+?)\s+and\s+type\s+(.+)$", command)
+        if not match:
+            return None
+        app = self._normalize_open_target(match.group(1).strip())
+        text_to_type = match.group(2).strip()
+        return app, text_to_type
+
+    def _respond_time(self) -> None:
+        now = datetime.now().strftime("%I:%M %p")
+        self.say(f"It is {now} sir")
+
     def handle_command(self, command: str) -> None:
         command = self._cleanup_command_text(command)
+
+        if command in {"time", "what is the time", "what s the time", "tell me the time"}:
+            self._respond_time()
+            return
+
+        open_and_type = self._extract_open_and_type(command)
+        if open_and_type:
+            app_name, text_to_type = open_and_type
+            self.say(f"Opening {app_name} and typing now, sir")
+            threading.Thread(target=self.open_and_type_human_like, args=(app_name, text_to_type), daemon=True).start()
+            return
 
         if command.startswith("open "):
             raw_target = command.replace("open ", "", 1).strip()
@@ -315,8 +340,7 @@ class JarvisAssistant:
                 self.say("Tell me which app to open, sir.")
                 return
 
-            msg = self.open_application(target)
-            self.say(msg)
+            self.say(self.open_application(target))
             return
 
         if command.startswith("search "):
@@ -327,17 +351,15 @@ class JarvisAssistant:
 
         if command.startswith("run "):
             shell_cmd = command.replace("run ", "", 1).strip()
-            msg = self.execute_terminal_command(shell_cmd)
-            self.say(msg)
+            self.say(self.execute_terminal_command(shell_cmd))
             return
 
-        # Allow bare app names (e.g., "Notepad" / "notepad")
         normalized = self._normalize_open_target(command)
         if normalized and len(normalized.split()) <= 3:
             self.say(self.open_application(normalized))
             return
 
-        self.say("I can open apps, search, or run commands.")
+        self.say("Sorry sir, I did not get that.")
 
     def open_application(self, app_name: str) -> str:
         app_name = app_name.lower().strip()
@@ -402,14 +424,31 @@ class JarvisAssistant:
             return f"I could not find {app_name} on this machine."
 
     def open_app_human_like_windows(self, app_name: str) -> None:
-        pyautogui.moveTo(38, 1050, duration=0.35)
-        pyautogui.click()
-        time.sleep(0.25)
         pyautogui.press("win")
         time.sleep(0.35)
-        pyautogui.typewrite(app_name, interval=0.06)
+        pyautogui.typewrite(app_name, interval=0.065)
         time.sleep(0.35)
         pyautogui.press("enter")
+
+    def open_and_type_human_like(self, app_name: str, text_to_type: str) -> None:
+        system = platform.system().lower()
+        target = self._normalize_open_target(app_name)
+
+        if pyautogui and system == "windows":
+            try:
+                if target in {"terminal", "cmd", "command prompt"}:
+                    target = "cmd"
+                self.open_app_human_like_windows(target)
+                time.sleep(1.2)
+                pyautogui.typewrite(text_to_type, interval=0.06)
+                if target == "cmd":
+                    pyautogui.press("enter")
+                return
+            except Exception:
+                pass
+
+        # fallback: open only if automation not available
+        self.open_application(target)
 
     def _open_chrome_window(self) -> None:
         system = platform.system().lower()
@@ -424,48 +463,33 @@ class JarvisAssistant:
         if pyautogui:
             try:
                 self._open_chrome_window()
-                time.sleep(1.1)
+                time.sleep(1.2)
                 if platform.system().lower() == "darwin":
                     pyautogui.hotkey("command", "l")
                 else:
                     pyautogui.hotkey("ctrl", "l")
-                pyautogui.typewrite(query, interval=0.07)
-                time.sleep(0.18)
+                pyautogui.typewrite(query, interval=0.08)
+                time.sleep(0.2)
                 pyautogui.press("enter")
                 return
             except Exception:
                 pass
-
         self.search_in_chrome(query)
 
     def open_website_human_like(self, website: str) -> None:
         normalized = website if website.startswith(("http://", "https://")) else f"https://{website}"
-
         if not pyautogui:
             webbrowser.open_new_tab(normalized)
             return
 
         try:
             self._open_chrome_window()
-            time.sleep(1.0)
-
-            screen_w, screen_h = pyautogui.size()
-            chrome_guess_x = int(screen_w * 0.46)
-            chrome_guess_y = int(screen_h * 0.05)
-            pyautogui.moveTo(chrome_guess_x, chrome_guess_y, duration=0.45)
-            pyautogui.click()
-
-            addr_x = int(screen_w * 0.51)
-            addr_y = int(screen_h * 0.08)
-            pyautogui.moveTo(addr_x, addr_y, duration=0.40)
-            pyautogui.click()
-
+            time.sleep(1.1)
             if platform.system().lower() == "darwin":
                 pyautogui.hotkey("command", "l")
             else:
                 pyautogui.hotkey("ctrl", "l")
-
-            pyautogui.typewrite(website, interval=0.065)
+            pyautogui.typewrite(website, interval=0.08)
             pyautogui.press("enter")
         except Exception:
             webbrowser.open_new_tab(normalized)
@@ -485,7 +509,6 @@ class JarvisAssistant:
     def search_in_chrome(self, query: str) -> None:
         encoded = urllib.parse.quote_plus(query)
         url = f"https://www.google.com/search?q={encoded}"
-
         for chrome_path in self._chrome_candidates():
             if chrome_path.exists():
                 webbrowser.register("jarvis_chrome", None, webbrowser.BackgroundBrowser(str(chrome_path)))
