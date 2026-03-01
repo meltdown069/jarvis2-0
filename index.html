@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jarvis 2.0 | AI System</title>
+<title>Jarvis 2.0</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
 *{
@@ -15,86 +15,61 @@
 }
 
 body{
-    background:#0b0f19;
-    color:#e6f1ff;
+    background:#0c0f16;
+    color:#e5e7eb;
     font-family:'Inter',sans-serif;
-    overflow-x:hidden;
+    scroll-behavior:smooth;
 }
 
-/* PARTICLE CANVAS */
-#particles{
-    position:fixed;
+/* Top GitHub Bar */
+.topbar{
     width:100%;
-    height:100%;
-    top:0;
-    left:0;
-    z-index:-1;
+    text-align:center;
+    padding:14px;
+    font-size:0.9rem;
+    background:#0f1626;
 }
 
-/* NAVBAR */
-nav{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:20px 8%;
-    position:fixed;
-    width:100%;
-    top:0;
-    background:rgba(11,15,25,0.85);
-    backdrop-filter:blur(8px);
-}
-
-nav h1{
-    font-family:'Orbitron',sans-serif;
-    color:#00c3ff;
-    font-size:1.2rem;
-}
-
-nav a{
-    color:#e6f1ff;
+.topbar a{
+    color:#00bfff;
     text-decoration:none;
-    margin-left:25px;
-    transition:0.3s;
+    font-weight:500;
 }
 
-nav a:hover{
-    color:#00c3ff;
+.topbar a:hover{
+    text-decoration:underline;
 }
 
-/* HERO */
+/* Hero Section */
 .hero{
-    height:100vh;
+    min-height:100vh;
     display:flex;
     flex-direction:column;
-    justify-content:center;
     align-items:center;
+    justify-content:center;
     text-align:center;
-    padding:0 20px;
+    padding:40px 20px;
 }
 
-.hero h2{
+.logo{
     font-family:'Orbitron',sans-serif;
-    font-size:4rem;
-    color:#00c3ff;
-    margin-bottom:15px;
+    font-size:3.2rem;
+    letter-spacing:2px;
+    color:#00bfff;
+    margin-bottom:25px;
 }
 
-.hero p{
-    max-width:600px;
-    opacity:0.8;
-    margin-bottom:40px;
-}
-
-/* TERMINAL */
 .terminal{
-    width:90%;
-    max-width:700px;
     background:#111827;
     padding:25px;
-    border-radius:8px;
+    border-radius:6px;
+    width:90%;
+    max-width:700px;
     font-family:monospace;
-    font-size:0.95rem;
-    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    text-align:left;
+    box-shadow:0 15px 40px rgba(0,0,0,0.6);
+    margin-bottom:35px;
+    line-height:1.6;
 }
 
 .cursor{
@@ -109,34 +84,94 @@ nav a:hover{
     25%,75%{opacity:0;}
 }
 
+.hero img{
+    max-width:320px;
+    width:80%;
+    opacity:0.9;
+}
+
+/* Content Sections */
+.section{
+    padding:100px 20px;
+    max-width:800px;
+    margin:auto;
+    text-align:center;
+}
+
+.section h2{
+    font-family:'Orbitron',sans-serif;
+    margin-bottom:20px;
+    color:#00bfff;
+}
+
+.section p{
+    opacity:0.8;
+    line-height:1.7;
+}
+
+/* Social Links */
+.socials a{
+    display:block;
+    margin:12px 0;
+    color:#00bfff;
+    text-decoration:none;
+    font-weight:500;
+}
+
+.socials a:hover{
+    text-decoration:underline;
+}
+
 footer{
     text-align:center;
     padding:40px 20px;
-    opacity:0.6;
-    font-size:0.9rem;
+    opacity:0.5;
+    font-size:0.85rem;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="particles"></canvas>
-
-<nav>
-    <h1>Jarvis 2.0</h1>
-    <div>
-        <a href="https://github.com/meltdown069" target="_blank">GitHub</a>
-        <a href="https://github.com/meltdown069/jarvis2-0" target="_blank">Project</a>
-        <a href="https://instagram.com/Fire.dron" target="_blank">Instagram</a>
-    </div>
-</nav>
+<div class="topbar">
+    <a href="https://github.com/meltdown069" target="_blank">
+        GitHub: meltdown069
+    </a>
+</div>
 
 <section class="hero">
-    <h2>JARVIS 2.0</h2>
-    <p>Advanced AI Automation & Intelligent System Engineered by Sparsh</p>
+
+    <div class="logo">JARVIS 2.0</div>
 
     <div class="terminal">
         <span id="typed"></span><span class="cursor"></span>
+    </div>
+
+    <img 
+    src="https://camo.githubusercontent.com/66d592525f51ee1015ffd564594a99b0c36802bb016849d6df89806ea18c4bba/68747470733a2f2f67696666696c65732e616c706861636f646572732e636f6d2f3231322f3231323530382e676966" 
+    alt="Iron Man Suit Animation">
+
+</section>
+
+<section class="section">
+    <h2>What is Jarvis?</h2>
+    <p>
+        Jarvis 2.0 is an AI automation framework focused on intelligent command execution,
+        modular expansion, and real-world system integration. Designed as a scalable
+        assistant architecture, it represents ongoing experimentation in personal AI
+        development and applied automation systems.
+    </p>
+</section>
+
+<section class="section">
+    <h2>Socials</h2>
+    <div class="socials">
+        <a href="https://instagram.com/Fire.dron" target="_blank">
+            Instagram: @Fire.dron
+        </a>
+        <a href="mailto:sparshimon@gmail.com">
+            Email: sparshimon@gmail.com
+        </a>
     </div>
 </section>
 
@@ -145,12 +180,11 @@ footer{
 </footer>
 
 <script>
-/* TYPING ANIMATION */
-const text = [
-    "Initializing Jarvis Core...",
+const lines = [
+    "Booting Jarvis Core...",
     "Loading AI Modules...",
-    "Establishing Neural Connections...",
-    "System Ready."
+    "Calibrating Neural Network...",
+    "System Online."
 ];
 
 let line = 0;
@@ -158,66 +192,21 @@ let char = 0;
 const typed = document.getElementById("typed");
 
 function typeEffect(){
-    if(line < text.length){
-        if(char < text[line].length){
-            typed.innerHTML += text[line].charAt(char);
+    if(line < lines.length){
+        if(char < lines[line].length){
+            typed.innerHTML += lines[line].charAt(char);
             char++;
-            setTimeout(typeEffect, 40);
+            setTimeout(typeEffect, 35);
         } else {
             typed.innerHTML += "<br>";
             line++;
             char = 0;
-            setTimeout(typeEffect, 500);
+            setTimeout(typeEffect, 700);
         }
     }
 }
 
 typeEffect();
-
-/* PARTICLES */
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particles = [];
-
-for(let i=0;i<100;i++){
-    particles.push({
-        x:Math.random()*canvas.width,
-        y:Math.random()*canvas.height,
-        radius:Math.random()*2,
-        dx:(Math.random()-0.5)*0.5,
-        dy:(Math.random()-0.5)*0.5
-    });
-}
-
-function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    particles.forEach(p=>{
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
-        ctx.fillStyle="#00c3ff";
-        ctx.fill();
-
-        p.x+=p.dx;
-        p.y+=p.dy;
-
-        if(p.x<0||p.x>canvas.width) p.dx*=-1;
-        if(p.y<0||p.y>canvas.height) p.dy*=-1;
-    });
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-
-window.addEventListener("resize",()=>{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
 </script>
 
 </body>
