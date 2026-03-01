@@ -3,210 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jarvis 2.0</title>
+<title>Jarvis2.0 | Sparsh</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-body{
-    background:#0c0f16;
-    color:#e5e7eb;
-    font-family:'Inter',sans-serif;
-    scroll-behavior:smooth;
+body {
+    font-family: 'Inter', sans-serif;
+    color: #ffffff;
+    background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+    overflow-x: hidden;
 }
 
-/* Top GitHub Bar */
-.topbar{
-    width:100%;
-    text-align:center;
-    padding:14px;
-    font-size:0.9rem;
-    background:#0f1626;
+/* Moving Gradient */
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-.topbar a{
-    color:#00bfff;
-    text-decoration:none;
-    font-weight:500;
+/* Fade Animation */
+.fade {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.topbar a:hover{
-    text-decoration:underline;
+.fade.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-/* Hero Section */
-.hero{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:40px 20px;
+header {
+    text-align: center;
+    padding: 25px 20px;
+    font-size: 14px;
+    letter-spacing: 2px;
 }
 
-.logo{
-    font-family:'Orbitron',sans-serif;
-    font-size:3.2rem;
-    letter-spacing:2px;
-    color:#00bfff;
-    margin-bottom:25px;
+header a {
+    color: #00c6ff;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-.terminal{
-    background:#111827;
-    padding:25px;
-    border-radius:6px;
-    width:90%;
-    max-width:700px;
-    font-family:monospace;
-    text-align:left;
-    box-shadow:0 15px 40px rgba(0,0,0,0.6);
-    margin-bottom:35px;
-    line-height:1.6;
+.hero {
+    text-align: center;
+    padding: 40px 20px;
 }
 
-.cursor{
-    display:inline-block;
-    width:8px;
-    background:#00ff90;
-    animation:blink 1s infinite;
+.hero img {
+    width: 160px;
+    margin-bottom: 20px;
 }
 
-@keyframes blink{
-    0%,50%,100%{opacity:1;}
-    25%,75%{opacity:0;}
+.hero h1 {
+    font-size: 42px;
+    font-weight: 600;
 }
 
-.hero img{
-    max-width:320px;
-    width:80%;
-    opacity:0.9;
+.hero p {
+    opacity: 0.85;
 }
 
-/* Content Sections */
-.section{
-    padding:100px 20px;
-    max-width:800px;
-    margin:auto;
-    text-align:center;
+.terminal {
+    max-width: 700px;
+    margin: 40px auto;
+    background: #111;
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-.section h2{
-    font-family:'Orbitron',sans-serif;
-    margin-bottom:20px;
-    color:#00bfff;
+.terminal::before {
+    content: "● ● ●";
+    color: #ff5f56;
+    display: block;
+    margin-bottom: 10px;
+    letter-spacing: 5px;
 }
 
-.section p{
-    opacity:0.8;
-    line-height:1.7;
+.terminal p {
+    line-height: 1.8;
 }
 
-/* Social Links */
-.socials a{
-    display:block;
-    margin:12px 0;
-    color:#00bfff;
-    text-decoration:none;
-    font-weight:500;
+.cursor {
+    display: inline-block;
+    width: 10px;
+    background: #00ffcc;
+    margin-left: 5px;
+    animation: blink 1s infinite;
 }
 
-.socials a:hover{
-    text-decoration:underline;
+@keyframes blink {
+    50% { opacity: 0; }
 }
 
-footer{
-    text-align:center;
-    padding:40px 20px;
-    opacity:0.5;
-    font-size:0.85rem;
+.gif-section {
+    text-align: center;
+    margin: 60px 0;
+}
+
+.gif-section img {
+    width: 80%;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+}
+
+.section {
+    max-width: 800px;
+    margin: 100px auto;
+    padding: 0 20px;
+}
+
+.section h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+
+.section p {
+    line-height: 1.8;
+    opacity: 0.9;
+}
+
+.socials a {
+    display: inline-block;
+    margin-right: 20px;
+    margin-top: 15px;
+    color: #00c6ff;
+    text-decoration: none;
+    font-weight: 600;
 }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-    <a href="https://github.com/meltdown069" target="_blank">
-        GitHub: meltdown069
+<header class="fade">
+    <a href="https://github.com/meltdown069/jarvis2-0" target="_blank">
+        github.com/meltdown069/jarvis2-0
     </a>
-</div>
+</header>
 
-<section class="hero">
-
-    <div class="logo">JARVIS 2.0</div>
-
-    <div class="terminal">
-        <span id="typed"></span><span class="cursor"></span>
-    </div>
-
-    <img 
-    src="https://camo.githubusercontent.com/66d592525f51ee1015ffd564594a99b0c36802bb016849d6df89806ea18c4bba/68747470733a2f2f67696666696c65732e616c706861636f646572732e636f6d2f3231322f3231323530382e676966" 
-    alt="Iron Man Suit Animation">
-
+<section class="hero fade">
+    <img src="logo.png" alt="Jarvis Logo">
+    <h1>Jarvis2.0</h1>
+    <p>Python-based Desktop Assistant</p>
 </section>
 
-<section class="section">
-    <h2>What is Jarvis?</h2>
+<div class="terminal fade">
+    <p>> Initializing Jarvis2.0...</p>
+    <p>> Loading core modules...</p>
+    <p>> Voice recognition active</p>
+    <p>> System ready<span class="cursor"></span></p>
+</div>
+
+<div class="gif-section fade">
+    <img src="https://camo.githubusercontent.com/66d592525f51ee1015ffd564594a99b0c36802bb016849d6df89806ea18c4bba/68747470733a2f2f67696666696c65732e616c706861636f646572732e636f6d2f3231322f3231323530382e676966"
+         alt="Iron Man Suit Animation">
+</div>
+
+<section class="section fade">
+    <h2>About</h2>
     <p>
-        Jarvis 2.0 is an AI automation framework focused on intelligent command execution,
-        modular expansion, and real-world system integration. Designed as a scalable
-        assistant architecture, it represents ongoing experimentation in personal AI
-        development and applied automation systems.
+        Hi there, glad you visited my page. I’m Sparsh, a student with a strong
+        interest in coding and building practical software projects.
+    </p>
+    <br><br>
+    <p>
+        My latest project is Jarvis2.0, a desktop assistant built in Python,
+        inspired by JARVIS from Iron Man.
     </p>
 </section>
 
-<section class="section">
-    <h2>Socials</h2>
-    <div class="socials">
-        <a href="https://instagram.com/Fire.dron" target="_blank">
-            Instagram: @Fire.dron
-        </a>
-        <a href="mailto:sparshimon@gmail.com">
-            Email: sparshimon@gmail.com
-        </a>
-    </div>
+<section class="section fade">
+    <h2>What is Jarvis2.0?</h2>
+    <p>
+        Jarvis2.0 is a desktop assistant designed to perform simple,
+        everyday tasks efficiently. The project is currently in development,
+        and I am actively working on improving its functionality and expanding
+        its feature set.
+    </p>
 </section>
 
-<footer>
-© 2026 Jarvis 2.0 | Developed by Sparsh
-</footer>
+<section class="section socials fade">
+    <h2>Connect</h2>
+    <a href="https://instagram.com/fire.drgn" target="_blank">
+        Instagram: @fire.drgn
+    </a>
+    <br>
+    <a href="mailto:sparshimon@gmail.com">
+        sparshimon@gmail.com
+    </a>
+</section>
 
 <script>
-const lines = [
-    "Booting Jarvis Core...",
-    "Loading AI Modules...",
-    "Calibrating Neural Network...",
-    "System Online."
-];
-
-let line = 0;
-let char = 0;
-const typed = document.getElementById("typed");
-
-function typeEffect(){
-    if(line < lines.length){
-        if(char < lines[line].length){
-            typed.innerHTML += lines[line].charAt(char);
-            char++;
-            setTimeout(typeEffect, 35);
-        } else {
-            typed.innerHTML += "<br>";
-            line++;
-            char = 0;
-            setTimeout(typeEffect, 700);
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('show');
         }
-    }
-}
+    });
+}, { threshold: 0.1 });
 
-typeEffect();
+document.querySelectorAll('.fade').forEach(el => {
+    observer.observe(el);
+});
 </script>
 
 </body>
