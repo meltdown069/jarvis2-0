@@ -28,6 +28,10 @@ Commands after wake word:
 
 - `who are you`
 - `what is on my screen` (Jarvis will ask you to describe and guide next actions)
+
+- `remember buy milk tomorrow`
+- `what do you remember`
+
 - `run pwd`
 
 Natural phrases also work:
@@ -120,3 +124,8 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 ## Security warning
 
 `run <command>` executes local shell commands. Use only on your own trusted machine.
+
+## Obstacle handling + memory
+
+- If Jarvis hits an obstacle (app/command fails), it asks you what to do next and continues based on your answer.
+- Jarvis stores memory in `jarvis_memory.json` (notes + preferences such as Chrome profile).

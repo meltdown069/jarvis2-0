@@ -13,6 +13,7 @@ import webbrowser
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 import tkinter as tk
 
 import pyttsx3
@@ -23,7 +24,6 @@ try:
     import pyautogui
 except Exception:
     pyautogui = None
-
 
 WAKE_WORD = "jarvis"
 SAMPLE_RATE = 16000
@@ -48,6 +48,10 @@ class JarvisAssistant:
 
         self.pending_action: tuple[str, str] | None = None
         self.awaiting_profile_choice = False
+        self.awaiting_obstacle_resolution = False
+
+        self.memory_path = Path("jarvis_memory.json")
+        self.memory: dict[str, Any] = self._load_memory()
 
         self.tts_engine = pyttsx3.init()
         self.tts_engine.setProperty("rate", 178)
@@ -67,6 +71,34 @@ class JarvisAssistant:
         self._build_ui()
         self._animate_orb()
         self._initialize_voice_recognition()
+
+    def _load_memory(self) -> dict[str, Any]:
+        if self.memory_path.exists():
+            try:
+                return json.loads(self.memory_path.read_text())
+            except Exception:
+                pass
+        return {"notes": [], "prefs": {}}
+
+    def _save_memory(self) -> None:
+        try:
+            self.memory_path.write_text(json.dumps(self.memory, indent=2))
+        except Exception:
+            pass
+
+    def _remember(self, note: str) -> None:
+        notes = self.memory.setdefault("notes", [])
+        notes.append({"ts": datetime.now().isoformat(timespec="seconds"), "note": note})
+        self.memory["notes"] = notes[-50:]
+        self._save_memory()
+
+    def _set_pref(self, key: str, value: str) -> None:
+        prefs = self.memory.setdefault("prefs", {})
+        prefs[key] = value
+        self._save_memory()
+
+    def _get_pref(self, key: str) -> str | None:
+        return self.memory.get("prefs", {}).get(key)
 
     def _build_ui(self) -> None:
         shell = tk.Frame(self.root, bg="#040E1D", highlightbackground="#113554", highlightthickness=1)
@@ -110,7 +142,6 @@ class JarvisAssistant:
         entry = tk.Entry(entry_wrap, textvariable=self.input_var, font=("Segoe UI", 11), bg="#05101D", fg="#E6F5FF", insertbackground="#E6F5FF", relief="flat")
         entry.pack(side="left", fill="x", expand=True, ipady=6)
         entry.bind("<Return>", self._on_manual_command)
-
         tk.Button(entry_wrap, text="SEND", command=self._on_manual_command, bg="#28C3FF", fg="#01101A", relief="flat", padx=12, pady=6, font=("Segoe UI", 9, "bold")).pack(side="left", padx=(8, 0))
 
         self.root.protocol("WM_DELETE_WINDOW", self.shutdown)
@@ -141,11 +172,7 @@ class JarvisAssistant:
         if env_value:
             candidates.append(Path(env_value))
         models_dir = Path("models")
-        candidates.extend([
-            models_dir / "vosk-model-small-en-us-0.15",
-            models_dir / "vosk-model-en-us-0.22",
-            models_dir / "vosk-model-small-en-in-0.4",
-        ])
+        candidates.extend([models_dir / "vosk-model-small-en-us-0.15", models_dir / "vosk-model-en-us-0.22", models_dir / "vosk-model-small-en-in-0.4"])
         if models_dir.exists():
             for sub in models_dir.iterdir():
                 if sub.is_dir() and sub.name.startswith("vosk-model"):
@@ -260,7 +287,6 @@ class JarvisAssistant:
             if cleaned:
                 threading.Thread(target=self.handle_command, args=(cleaned,), daemon=True).start()
             return
-
         if WAKE_WORD in text:
             inline_command = self._extract_inline_command(text)
             if inline_command:
@@ -280,58 +306,55 @@ class JarvisAssistant:
         target = re.sub(r"^(app|application)\s+", "", target)
         target = re.sub(r"^(app|application)\s+(called|named)\s+", "", target)
         target = re.sub(r"^(called|named)\s+", "", target).strip()
-        alias_map = {
-            "vs code": "vscode",
-            "visual studio code": "vscode",
-            "google chrome": "chrome",
-            "command prompt": "terminal",
-            "cmd": "terminal",
-            "note pad": "notepad",
-        }
+        alias_map = {"vs code": "vscode", "visual studio code": "vscode", "google chrome": "chrome", "command prompt": "terminal", "cmd": "terminal", "note pad": "notepad"}
         return alias_map.get(target, target)
 
     def _extract_open_and_type(self, command: str) -> tuple[str, str] | None:
-        match = re.match(r"^open\s+(.+?)\s+and\s+type\s+(.+)$", command)
-        if not match:
+        m = re.match(r"^open\s+(.+?)\s+and\s+type\s+(.+)$", command)
+        if not m:
             return None
-        return self._normalize_open_target(match.group(1).strip()), match.group(2).strip()
-
-    def _respond_time(self) -> None:
-        self.say(f"It is {datetime.now().strftime('%I:%M %p')} sir")
-
-    def _respond_identity(self) -> None:
-        self.say("I am Jarvis, your local on-device assistant. I can open apps, search, type, and run commands.")
+        return self._normalize_open_target(m.group(1).strip()), m.group(2).strip()
 
     def _resolve_chrome_profile_choice(self, text: str) -> str | None:
         t = self._cleanup_command_text(text)
-        profile_alias = {
-            "default": "Default",
-            "profile 1": "Profile 1",
-            "one": "Profile 1",
-            "1": "Profile 1",
-            "work": "Profile 1",
-            "profile 2": "Profile 2",
-            "two": "Profile 2",
-            "2": "Profile 2",
-            "personal": "Profile 2",
-        }
-        for key, value in profile_alias.items():
-            if key in t:
-                return value
+        choices = {"default": "Default", "profile 1": "Profile 1", "one": "Profile 1", "1": "Profile 1", "profile 2": "Profile 2", "two": "Profile 2", "2": "Profile 2"}
+        for k, v in choices.items():
+            if k in t:
+                return v
         return None
+
+    def _maybe_handle_obstacle_followup(self, command: str) -> bool:
+        if not self.awaiting_obstacle_resolution or not self.pending_action:
+            return False
+        if command in {"cancel", "stop", "leave it"}:
+            self.awaiting_obstacle_resolution = False
+            self.pending_action = None
+            self.say("Okay sir, cancelled.")
+            return True
+        action, _payload = self.pending_action
+        self.awaiting_obstacle_resolution = False
+        self.pending_action = None
+        if action == "open_app":
+            self.say(f"Trying {command} instead, sir.")
+            self.say(self.open_application(command))
+            return True
+        if action == "run_cmd":
+            self.say("Trying your alternative command now, sir.")
+            self.say(self.execute_terminal_command(command))
+            return True
+        return False
 
     def _maybe_handle_profile_followup(self, command: str) -> bool:
         if not self.awaiting_profile_choice or not self.pending_action:
             return False
-
         profile = self._resolve_chrome_profile_choice(command)
         if not profile:
             self.say("Please tell me profile 1, profile 2, or default.")
             return True
-
         action, payload = self.pending_action
         self.awaiting_profile_choice = False
         self.pending_action = None
+        self._set_pref("chrome_profile", profile)
         self.say(f"Opening {profile} now, sir.")
         if action == "search":
             threading.Thread(target=self.search_human_like, args=(payload, profile), daemon=True).start()
@@ -343,25 +366,37 @@ class JarvisAssistant:
         command = self._cleanup_command_text(command)
         if not command:
             return
-
+        if self._maybe_handle_obstacle_followup(command):
+            return
         if self._maybe_handle_profile_followup(command):
             return
 
         if command in {"time", "what is the time", "what s the time", "tell me the time"}:
-            self._respond_time()
+            self.say(f"It is {datetime.now().strftime('%I:%M %p')} sir")
             return
-
         if command in {"who are you", "what are you", "who r you"}:
-            self._respond_identity()
+            self.say("I am Jarvis, your local assistant. I can open apps, search, type, run commands, and remember notes.")
             return
-
         if command in {"what is on my screen", "what s on my screen", "what do you see"}:
-            self.say("I cannot fully read your screen yet, sir. I can guide actions if you describe what you see.")
+            self.say("I cannot fully read your screen yet. Describe what you see and I will guide you step by step.")
             return
 
-        open_and_type = self._extract_open_and_type(command)
-        if open_and_type:
-            app_name, text_to_type = open_and_type
+        mem = re.match(r"^remember\s+(.+)$", command)
+        if mem:
+            self._remember(f"user_note: {mem.group(1).strip()}")
+            self.say("Got it sir. I will remember that.")
+            return
+        if command in {"memory", "show memory", "what do you remember"}:
+            notes = self.memory.get("notes", [])
+            if notes:
+                self.say(f"I remember {len(notes)} notes. Latest: {notes[-1]['note']}")
+            else:
+                self.say("I do not have notes yet, sir.")
+            return
+
+        open_type = self._extract_open_and_type(command)
+        if open_type:
+            app_name, text_to_type = open_type
             self.say(f"Opening {app_name} and typing now, sir")
             threading.Thread(target=self.open_and_type_human_like, args=(app_name, text_to_type), daemon=True).start()
             return
@@ -369,22 +404,38 @@ class JarvisAssistant:
         if command.startswith("open "):
             target = self._normalize_open_target(command.replace("open ", "", 1).strip())
             if self._looks_like_website(target):
-                self.pending_action = ("website", target)
-                self.awaiting_profile_choice = True
-                self.say("I see multiple Chrome profiles possible. Which one should I open, profile 1, profile 2, or default?")
+                pref = self._get_pref("chrome_profile")
+                if pref:
+                    self.say(f"Using your preferred Chrome profile {pref}, sir.")
+                    threading.Thread(target=self.open_website_human_like, args=(target, pref), daemon=True).start()
+                else:
+                    self.pending_action = ("website", target)
+                    self.awaiting_profile_choice = True
+                    self.say("I see multiple Chrome profiles possible. Which one should I open: profile 1, profile 2, or default?")
                 return
             self.say(self.open_application(target))
             return
 
         if command.startswith("search "):
             query = command.replace("search ", "", 1).strip()
-            self.pending_action = ("search", query)
-            self.awaiting_profile_choice = True
-            self.say("Which Chrome profile should I use, profile 1, profile 2, or default?")
+            pref = self._get_pref("chrome_profile")
+            if pref:
+                self.say(f"Searching with your preferred profile {pref}, sir.")
+                threading.Thread(target=self.search_human_like, args=(query, pref), daemon=True).start()
+            else:
+                self.pending_action = ("search", query)
+                self.awaiting_profile_choice = True
+                self.say("Which Chrome profile should I use: profile 1, profile 2, or default?")
             return
 
         if command.startswith("run "):
-            self.say(self.execute_terminal_command(command.replace("run ", "", 1).strip()))
+            cmd_to_run = command.replace("run ", "", 1).strip()
+            result = self.execute_terminal_command(cmd_to_run)
+            self.say(result)
+            if result == "Command failed.":
+                self.pending_action = ("run_cmd", cmd_to_run)
+                self.awaiting_obstacle_resolution = True
+                self.say("I hit an obstacle. Tell me an alternative command or say cancel.")
             return
 
         normalized = self._normalize_open_target(command)
@@ -429,14 +480,16 @@ class JarvisAssistant:
                 subprocess.Popen([app_name])
             return f"Trying to open {app_name} sir"
         except Exception:
-            return f"I could not find {app_name} on this machine."
+            self.pending_action = ("open_app", app_name)
+            self.awaiting_obstacle_resolution = True
+            return f"I could not find {app_name}. Tell me another app name and I will continue." 
 
     def open_app_human_like_windows(self, app_name: str) -> None:
-        run_apps = {"notepad": "notepad", "terminal": "cmd", "cmd": "cmd"}
-        if app_name in run_apps:
+        quick = {"notepad": "notepad", "terminal": "cmd", "cmd": "cmd"}
+        if app_name in quick:
             pyautogui.hotkey("win", "r")
             time.sleep(0.3)
-            pyautogui.typewrite(run_apps[app_name], interval=0.06)
+            pyautogui.typewrite(quick[app_name], interval=0.06)
             pyautogui.press("enter")
             return
         pyautogui.press("win")
@@ -456,11 +509,11 @@ class JarvisAssistant:
                 pyautogui.typewrite(text_to_type, interval=0.06)
                 if target == "cmd":
                     pyautogui.press("enter")
-                self.say("Done sir. Anything else on your screen?")
+                self.say("Done sir. Do you want me to continue with anything else?")
                 return
             except Exception:
                 pass
-        self.open_application(target)
+        self.say(self.open_application(target))
 
     def _open_chrome_window(self, profile: str | None = None) -> None:
         system = platform.system().lower()
@@ -486,7 +539,7 @@ class JarvisAssistant:
                 pyautogui.typewrite(query, interval=0.08)
                 time.sleep(0.2)
                 pyautogui.press("enter")
-                self.say("Search complete sir. Should I open any result?")
+                self.say("Search done sir. Should I open any result?")
                 return
             except Exception:
                 pass
