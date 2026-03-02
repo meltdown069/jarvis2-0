@@ -90,7 +90,7 @@ class BehaviorEngine:
 
         if cmd in {"who are you", "what are you", "who r you"}:
             self._trace(command, "identity_intent", "introduce assistant capabilities")
-            self.app.say("I am Jarvis, your local assistant. I can open apps, search, type, run commands, and remember notes.")
+            self.app.say("I am Jarvis. I can open apps, search, type, run commands, and remember notes for you.")
             return
 
         lang_match = re.match(r"^(set|change|switch)\s+(language\s+to\s+)?([a-z]+)$", cmd)

@@ -37,7 +37,7 @@ Commands after wake word:
 - `speak in hindi`
 - `set language to spanish`
 - `what languages do you speak`
-- `open notepad and then open chrome and then search ai news`
+- `open notepad and then open chrome and then search tech news`
 - terminal debug trace: `user said: ... so i will use ...` for each command
 - `open whatsapp and search gauri contact and if you find her send her a hi`
 
