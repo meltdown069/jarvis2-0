@@ -3,6 +3,7 @@ import json
 import os
 import queue
 import threading
+import tkinter.simpledialog as simpledialog
 from pathlib import Path
 from typing import Any
 
@@ -56,12 +57,30 @@ class JarvisAssistant:
 
         self.gui = JarvisGUI(self._on_manual_command)
         self.gui.root.protocol("WM_DELETE_WINDOW", self.shutdown)
+        self._ensure_one_time_gemini_prompt()
 
         self.voice_enabled = False
         self.model: Model | None = None
         self.recognizer: KaldiRecognizer | None = None
         self._initialize_voice_recognition()
 
+
+    def _ensure_one_time_gemini_prompt(self):
+        if self.memory.get_pref("gemini_prompted") == "yes":
+            return
+
+        prompt = (
+            "Optional setup for heavy 3-step+ tasks:\n"
+            "Enter your Gemini API key now (leave blank to skip).\n"
+            "Basic commands will continue locally without API usage."
+        )
+        key = simpledialog.askstring("Jarvis Setup", prompt, parent=self.gui.root, show="*")
+        if key and key.strip():
+            self.memory.set_pref("gemini_api_key", key.strip())
+            self.say("Gemini key saved. I will only use it for heavy multi-step tasks, sir.")
+        else:
+            self.say("No Gemini key saved. I will run tasks locally, sir.")
+        self.memory.set_pref("gemini_prompted", "yes")
 
     def _resolve_input_device(self) -> int | None:
         if self.mic_name:

@@ -1,6 +1,8 @@
+import json
 import re
 import threading
 from datetime import datetime
+from urllib import error, request
 
 
 class BehaviorEngine:
@@ -52,6 +54,48 @@ class BehaviorEngine:
     def _trace(self, user_said: str, tool: str, reason: str):
         self.app.trace_decision(user_said, tool, reason)
 
+    def _maybe_refine_complex_steps(self, raw_steps: list[str], original_command: str) -> list[str]:
+        if len(raw_steps) < 3:
+            return raw_steps
+
+        api_key = self.app.memory.get_pref("gemini_api_key")
+        if not api_key:
+            self.app.say("This looks like a heavy multi-step task. Add a Gemini API key in memory to improve planning quality.")
+            return raw_steps
+
+        self._trace(original_command, "gemini_planner", f"optimize {len(raw_steps)} step plan")
+        prompt = (
+            "You are planning desktop assistant actions. Return JSON only in the format "
+            "{\"steps\":[\"step one\",\"step two\"]}. Keep max 6 short action steps. "
+            f"User request: {original_command}"
+        )
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2},
+        }
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+
+        try:
+            req = request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with request.urlopen(req, timeout=20) as resp:
+                body = json.loads(resp.read().decode("utf-8"))
+            text = body["candidates"][0]["content"]["parts"][0]["text"].strip()
+            # tolerate markdown fenced json
+            text = text.replace("```json", "").replace("```", "").strip()
+            data = json.loads(text)
+            steps = [self.cleanup(x) for x in data.get("steps", []) if isinstance(x, str) and self.cleanup(x)]
+            if steps:
+                self.app.say("Heavy task planner is ready sir. Executing optimized steps.")
+                return steps[:6]
+        except (error.URLError, TimeoutError, KeyError, ValueError, json.JSONDecodeError):
+            self.app.say("Planner failed, sir. I will continue with local step-by-step execution.")
+        return raw_steps
+
     def handle_command(self, command: str):
         cmd = self.cleanup(command)
         if not cmd:
@@ -76,6 +120,7 @@ class BehaviorEngine:
 
         if " and then " in cmd:
             steps = [x.strip() for x in cmd.split(" and then ") if x.strip()]
+            steps = self._maybe_refine_complex_steps(steps, command)
             self._trace(command, "task_chain", f"execute {len(steps)} chained steps")
             self.app.say(f"Understood sir. I will execute {len(steps)} steps.")
             for i, step in enumerate(steps, 1):

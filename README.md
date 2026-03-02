@@ -83,6 +83,13 @@ The overlay has a higher-fidelity Jarvis look with:
 - `automation.py`: app/browser/typing/command automation actions
 - `memory_store.py`: persistent memory (notes/preferences)
 
+### Heavy task planner (optional Gemini key)
+
+- On first launch, Jarvis asks one time for an optional Gemini API key.
+- The key is used only for heavy chained commands with **3 or more** `and then` steps.
+- Normal commands and 1-2 step chains run locally and do not use the API.
+- You can skip the key and everything still works in local mode.
+
 ## Setup
 
 ### 1) Install Python deps
