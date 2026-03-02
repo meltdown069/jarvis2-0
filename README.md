@@ -178,6 +178,7 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 - Jarvis can help with **defensive/ethical security guidance** (hardening, legal lab learning, checklists).
 - Jarvis does **not** provide unauthorized or harmful hacking instructions.
 - Jarvis will not execute or automate offensive tools/flows (for example phishing, brute-force, exploit runners, or attack chains).
+- Jarvis can still assist with **authorized defensive workflows** using tools like nmap, ncat, and Burp Suite.
 
 
 ## Speech recognition quality tips

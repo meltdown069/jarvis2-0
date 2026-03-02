@@ -155,6 +155,13 @@ class BehaviorEngine:
             self.app.say(f"I can speak in: {langs}")
             return
 
+        defensive_tools = ["nmap", "ncat", "burpsuite", "burp suite"]
+        if any(k in cmd for k in defensive_tools):
+            self._trace(command, "defensive_security_help", "provide authorized defensive guidance for security tooling")
+            self.app.say("I can help with defensive and authorized use of nmap, ncat, and Burp Suite on your own systems.")
+            self.app.say("Tell me your goal, like host discovery, open-port inventory, service banner check, or proxy setup, and I will guide step by step.")
+            return
+
         blocked_security_terms = [
             "hack", "hacking", "exploit", "payload", "sql injection", "ddos", "phishing",
             "hydra", "sqlmap", "zphisher", "metasploit", "meterpreter", "bruteforce", "brute force",
