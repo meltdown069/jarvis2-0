@@ -50,6 +50,7 @@ Compound commands now work:
 
 ### Chatty + self-aware behavior
 
+- Task progress voice: Jarvis now announces when a task starts and when it completes.
 - Jarvis now asks follow-up questions when needed (for example Chrome profile selection).
 - For Chrome actions (`search ...`, `open youtube.com`), Jarvis asks: profile 1, profile 2, or default.
 - After actions, Jarvis gives conversational follow-ups like asking what to do next on screen.

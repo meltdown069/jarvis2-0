@@ -49,6 +49,7 @@ class JarvisAssistant:
         self.pending_action: tuple[str, str] | None = None
         self.awaiting_profile_choice = False
         self.awaiting_obstacle_resolution = False
+        self.current_task = ""
 
         self.memory_path = Path("jarvis_memory.json")
         self.memory: dict[str, Any] = self._load_memory()
@@ -99,6 +100,15 @@ class JarvisAssistant:
 
     def _get_pref(self, key: str) -> str | None:
         return self.memory.get("prefs", {}).get(key)
+
+
+    def _start_task(self, description: str) -> None:
+        self.current_task = description
+        self.say(f"Starting task: {description}")
+
+    def _finish_task(self, message: str) -> None:
+        self.current_task = ""
+        self.say(message)
 
     def _build_ui(self) -> None:
         shell = tk.Frame(self.root, bg="#040E1D", highlightbackground="#113554", highlightthickness=1)
@@ -397,7 +407,7 @@ class JarvisAssistant:
         open_type = self._extract_open_and_type(command)
         if open_type:
             app_name, text_to_type = open_type
-            self.say(f"Opening {app_name} and typing now, sir")
+            self._start_task(f"open {app_name} and type text")
             threading.Thread(target=self.open_and_type_human_like, args=(app_name, text_to_type), daemon=True).start()
             return
 
@@ -406,13 +416,14 @@ class JarvisAssistant:
             if self._looks_like_website(target):
                 pref = self._get_pref("chrome_profile")
                 if pref:
-                    self.say(f"Using your preferred Chrome profile {pref}, sir.")
+                    self._start_task(f"open website in {pref}")
                     threading.Thread(target=self.open_website_human_like, args=(target, pref), daemon=True).start()
                 else:
                     self.pending_action = ("website", target)
                     self.awaiting_profile_choice = True
                     self.say("I see multiple Chrome profiles possible. Which one should I open: profile 1, profile 2, or default?")
                 return
+            self._start_task(f"open {target}")
             self.say(self.open_application(target))
             return
 
@@ -420,7 +431,7 @@ class JarvisAssistant:
             query = command.replace("search ", "", 1).strip()
             pref = self._get_pref("chrome_profile")
             if pref:
-                self.say(f"Searching with your preferred profile {pref}, sir.")
+                self._start_task(f"search {query}")
                 threading.Thread(target=self.search_human_like, args=(query, pref), daemon=True).start()
             else:
                 self.pending_action = ("search", query)
@@ -430,6 +441,7 @@ class JarvisAssistant:
 
         if command.startswith("run "):
             cmd_to_run = command.replace("run ", "", 1).strip()
+            self._start_task(f"run {cmd_to_run}")
             result = self.execute_terminal_command(cmd_to_run)
             self.say(result)
             if result == "Command failed.":
@@ -509,7 +521,7 @@ class JarvisAssistant:
                 pyautogui.typewrite(text_to_type, interval=0.06)
                 if target == "cmd":
                     pyautogui.press("enter")
-                self.say("Done sir. Do you want me to continue with anything else?")
+                self._finish_task("Done sir. Do you want me to continue with anything else?")
                 return
             except Exception:
                 pass
@@ -539,7 +551,7 @@ class JarvisAssistant:
                 pyautogui.typewrite(query, interval=0.08)
                 time.sleep(0.2)
                 pyautogui.press("enter")
-                self.say("Search done sir. Should I open any result?")
+                self._finish_task("Search done sir. Should I open any result?")
                 return
             except Exception:
                 pass
@@ -559,7 +571,7 @@ class JarvisAssistant:
                 pyautogui.hotkey("ctrl", "l")
             pyautogui.typewrite(website, interval=0.08)
             pyautogui.press("enter")
-            self.say("Website opened sir. Want me to type anything there?")
+            self._finish_task("Website opened sir. Want me to type anything there?")
         except Exception:
             webbrowser.open_new_tab(normalized)
 
