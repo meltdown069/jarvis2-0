@@ -18,7 +18,14 @@ class BehaviorEngine:
         target = re.sub(r"^(app|application)\s+", "", target)
         target = re.sub(r"^(app|application)\s+(called|named)\s+", "", target)
         target = re.sub(r"^(called|named)\s+", "", target).strip()
-        alias = {"vs code": "vscode", "visual studio code": "vscode", "google chrome": "chrome", "command prompt": "terminal", "cmd": "terminal", "note pad": "notepad"}
+        alias = {
+            "vs code": "vscode",
+            "visual studio code": "vscode",
+            "google chrome": "chrome",
+            "command prompt": "terminal",
+            "cmd": "terminal",
+            "note pad": "notepad",
+        }
         return alias.get(target, target)
 
     def looks_like_website(self, text: str) -> bool:
@@ -28,11 +35,22 @@ class BehaviorEngine:
 
     def resolve_profile(self, text: str):
         t = self.cleanup(text)
-        choices = {"default": "Default", "profile 1": "Profile 1", "one": "Profile 1", "1": "Profile 1", "profile 2": "Profile 2", "two": "Profile 2", "2": "Profile 2"}
+        choices = {
+            "default": "Default",
+            "profile 1": "Profile 1",
+            "one": "Profile 1",
+            "1": "Profile 1",
+            "profile 2": "Profile 2",
+            "two": "Profile 2",
+            "2": "Profile 2",
+        }
         for k, v in choices.items():
             if k in t:
                 return v
         return None
+
+    def _trace(self, user_said: str, tool: str, reason: str):
+        self.app.trace_decision(user_said, tool, reason)
 
     def handle_command(self, command: str):
         cmd = self.cleanup(command)
@@ -49,6 +67,7 @@ class BehaviorEngine:
             self.app.awaiting_profile_choice = False
             self.app.memory.set_pref("chrome_profile", profile)
             self.app.start_task(f"continue {action} with {profile}")
+            self._trace(command, "profile_followup", f"continue {action} with {profile}")
             if action == "search":
                 threading.Thread(target=self.app.automation.human_search, args=(payload, profile), daemon=True).start()
             else:
@@ -57,6 +76,7 @@ class BehaviorEngine:
 
         if " and then " in cmd:
             steps = [x.strip() for x in cmd.split(" and then ") if x.strip()]
+            self._trace(command, "task_chain", f"execute {len(steps)} chained steps")
             self.app.say(f"Understood sir. I will execute {len(steps)} steps.")
             for i, step in enumerate(steps, 1):
                 self.app.say(f"Step {i}: {step}")
@@ -64,38 +84,61 @@ class BehaviorEngine:
             return
 
         if cmd in {"time", "what is the time", "what s the time", "tell me the time"}:
+            self._trace(command, "time_intent", "reply with current time")
             self.app.say(f"It is {datetime.now().strftime('%I:%M %p')} sir")
             return
+
         if cmd in {"who are you", "what are you", "who r you"}:
+            self._trace(command, "identity_intent", "introduce assistant capabilities")
             self.app.say("I am Jarvis, your local assistant. I can open apps, search, type, run commands, and remember notes.")
             return
 
-        # Language controls
         lang_match = re.match(r"^(set|change|switch)\s+(language\s+to\s+)?([a-z]+)$", cmd)
         if lang_match:
-            self.app.set_tts_language(lang_match.group(3))
+            lang = lang_match.group(3)
+            self._trace(command, "language_switch", f"switch TTS language to {lang}")
+            self.app.set_tts_language(lang)
             return
         if cmd.startswith("speak in "):
-            self.app.set_tts_language(cmd.replace("speak in ", "", 1).strip())
+            lang = cmd.replace("speak in ", "", 1).strip()
+            self._trace(command, "language_switch", f"switch TTS language to {lang}")
+            self.app.set_tts_language(lang)
             return
         if cmd in {"what languages do you speak", "which languages do you speak", "languages", "list languages"}:
+            self._trace(command, "language_list", "list installed TTS languages")
             langs = ", ".join(self.app.available_tts_languages())
             self.app.say(f"I can speak in: {langs}")
             return
 
-        # Safe cybersecurity assistant behavior
         if any(k in cmd for k in ["hack", "exploit", "payload", "sql injection", "ddos", "phishing"]):
+            self._trace(command, "security_guard", "provide defensive-only cybersecurity guidance")
             self.app.say("I can help with ethical, defensive security only. I will not provide harmful or unauthorized hacking steps.")
             self.app.say("I can help with security checklists, hardening, vulnerability management, and CTF-style legal learning.")
+            return
+
+        # whatsapp task: open whatsapp and search <name> contact and if you find her send her a hi
+        whatsapp_match = re.match(r"^open\s+whatsapp\s+and\s+search\s+(.+?)\s+contact\s+and\s+if\s+you\s+find\s+.+?\s+send\s+.+?\s+(?:a\s+)?(.+)$", cmd)
+        if whatsapp_match:
+            contact = whatsapp_match.group(1).strip()
+            msg = whatsapp_match.group(2).strip()
+            self._trace(command, "whatsapp_send_message", f"open whatsapp, find {contact}, send '{msg}'")
+            self.app.start_task(f"send whatsapp message to {contact}")
+            ok = self.app.automation.send_whatsapp_message(contact, msg)
+            if ok:
+                self.app.finish_task(f"Message sent to {contact}, sir.")
+            else:
+                self.app.finish_task(f"I could not complete message send automatically. Please check WhatsApp window for {contact}.")
             return
 
         mem = re.match(r"^remember\s+(.+)$", cmd)
         if mem:
             note = mem.group(1).strip()
+            self._trace(command, "memory_write", f"store note '{note}'")
             self.app.memory.remember(f"user_note: {note}")
             self.app.say("Got it sir. I will remember that.")
             return
         if cmd in {"memory", "show memory", "what do you remember"}:
+            self._trace(command, "memory_read", "read latest saved notes")
             notes = self.app.memory.get_notes()
             self.app.say(f"I remember {len(notes)} notes. Latest: {notes[-1]['note']}" if notes else "I do not have notes yet, sir.")
             return
@@ -104,6 +147,7 @@ class BehaviorEngine:
         if m:
             app_name = self.normalize_target(m.group(1).strip())
             text_to_type = m.group(2).strip()
+            self._trace(command, "open_and_type", f"open {app_name} then type '{text_to_type}'")
             self.app.start_task(f"open {app_name} and type")
             threading.Thread(target=self.app.automation.open_and_type, args=(app_name, text_to_type), daemon=True).start()
             self.app.finish_task("Done sir. Do you want me to continue with anything else?")
@@ -114,14 +158,17 @@ class BehaviorEngine:
             if self.looks_like_website(target):
                 pref = self.app.memory.get_pref("chrome_profile")
                 if pref:
+                    self._trace(command, "human_open_website", f"open {target} in chrome profile {pref}")
                     self.app.start_task(f"open website in {pref}")
                     threading.Thread(target=self.app.automation.human_open_website, args=(target, pref), daemon=True).start()
                     self.app.finish_task("Website opened sir. Want me to type anything there?")
                 else:
+                    self._trace(command, "profile_request", "ask for chrome profile before website task")
                     self.app.pending_action = ("website", target)
                     self.app.awaiting_profile_choice = True
                     self.app.say("I see multiple Chrome profiles possible. Which one should I open: profile 1, profile 2, or default?")
                 return
+            self._trace(command, "open_application", f"open app {target}")
             self.app.start_task(f"open {target}")
             msg = self.app.automation.open_application(target)
             self.app.say(msg)
@@ -132,10 +179,12 @@ class BehaviorEngine:
             q = cmd.replace("search ", "", 1).strip()
             pref = self.app.memory.get_pref("chrome_profile")
             if pref:
+                self._trace(command, "human_search", f"search '{q}' with profile {pref}")
                 self.app.start_task(f"search {q}")
                 threading.Thread(target=self.app.automation.human_search, args=(q, pref), daemon=True).start()
                 self.app.finish_task("Search done sir. Should I open any result?")
             else:
+                self._trace(command, "profile_request", "ask for chrome profile before search")
                 self.app.pending_action = ("search", q)
                 self.app.awaiting_profile_choice = True
                 self.app.say("Which Chrome profile should I use: profile 1, profile 2, or default?")
@@ -143,6 +192,7 @@ class BehaviorEngine:
 
         if cmd.startswith("run "):
             c = cmd.replace("run ", "", 1).strip()
+            self._trace(command, "run_command", f"execute shell command '{c}'")
             self.app.start_task(f"run {c}")
             result = self.app.automation.run_command(c)
             self.app.say(result)
@@ -151,9 +201,11 @@ class BehaviorEngine:
 
         normalized = self.normalize_target(cmd)
         if normalized and len(normalized.split()) <= 3:
+            self._trace(command, "open_application", f"open app {normalized}")
             self.app.start_task(f"open {normalized}")
             self.app.say(self.app.automation.open_application(normalized))
             self.app.finish_task("Task completed sir.")
             return
 
+        self._trace(command, "fallback", "ask user to rephrase unknown intent")
         self.app.say("Sorry sir, I did not get that. Could you rephrase?")

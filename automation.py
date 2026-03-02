@@ -25,10 +25,14 @@ class AutomationController:
             "vscode": {"windows": ["cmd", "/c", "start", "", "code"], "darwin": ["open", "-a", "Visual Studio Code"], "linux": ["code"]},
             "terminal": {"windows": ["cmd", "/c", "start", "", "cmd"], "darwin": ["open", "-a", "Terminal"], "linux": ["x-terminal-emulator"]},
             "notepad": {"windows": ["notepad"], "darwin": ["open", "-a", "TextEdit"], "linux": ["gedit"]},
+            "whatsapp": {"windows": ["cmd", "/c", "start", "", "whatsapp"], "darwin": ["open", "-a", "WhatsApp"], "linux": ["whatsapp-for-linux"]},
         }
         try:
             if app_name in app_map:
-                subprocess.Popen(app_map[app_name].get(self.system) or [])
+                cmd = app_map[app_name].get(self.system)
+                if not cmd:
+                    return f"{app_name} is not mapped for this OS yet."
+                subprocess.Popen(cmd)
                 return f"Opening {app_name} sir"
             if self.system == "windows":
                 subprocess.Popen(["cmd", "/c", "start", "", app_name])
@@ -39,6 +43,37 @@ class AutomationController:
             return f"Trying to open {app_name} sir"
         except Exception:
             return f"I could not find {app_name}. Tell me another app name and I will continue."
+
+    def send_whatsapp_message(self, contact_name: str, message: str) -> bool:
+        contact_name = contact_name.strip()
+        message = message.strip()
+        if pyautogui and self.system in {"windows", "darwin", "linux"}:
+            try:
+                self.open_application("whatsapp")
+                time.sleep(2.0)
+                # Search contact
+                if self.system == "darwin":
+                    pyautogui.hotkey("command", "f")
+                else:
+                    pyautogui.hotkey("ctrl", "f")
+                time.sleep(0.25)
+                pyautogui.typewrite(contact_name, interval=0.06)
+                time.sleep(0.5)
+                pyautogui.press("enter")
+                time.sleep(0.6)
+                pyautogui.typewrite(message, interval=0.06)
+                pyautogui.press("enter")
+                return True
+            except Exception:
+                pass
+
+        # fallback: open WhatsApp Web with prefilled message (needs phone, so best effort)
+        try:
+            encoded = urllib.parse.quote_plus(message)
+            webbrowser.open_new_tab(f"https://web.whatsapp.com/")
+        except Exception:
+            return False
+        return False
 
     def _open_chrome(self, profile: str | None = None):
         if self.system == "windows":

@@ -49,6 +49,10 @@ class JarvisAssistant:
         self.recognizer: KaldiRecognizer | None = None
         self._initialize_voice_recognition()
 
+
+    def trace_decision(self, user_said: str, tool: str, reason: str):
+        print(f"user said: '{user_said}' so i will use {tool} to {reason}")
+
     def start_task(self, description: str):
         self.current_task = description
         self.say(f"Starting task: {description}")
