@@ -65,6 +65,15 @@ The overlay has a higher-fidelity Jarvis look with:
 - transcript panel,
 - command console input.
 
+
+## File structure (modularized)
+
+- `assistant.py`: app bootstrap + voice loop orchestration
+- `gui.py`: all Tkinter UI rendering/animation
+- `behavior.py`: command parsing + conversational behavior logic
+- `automation.py`: app/browser/typing/command automation actions
+- `memory_store.py`: persistent memory (notes/preferences)
+
 ## Setup
 
 ### 1) Install Python deps
