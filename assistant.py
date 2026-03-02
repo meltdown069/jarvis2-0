@@ -4,6 +4,7 @@ import os
 import queue
 import threading
 from pathlib import Path
+from typing import Any
 
 import pyttsx3
 import sounddevice as sd
@@ -15,12 +16,24 @@ from gui import JarvisGUI
 from memory_store import MemoryStore
 
 WAKE_WORD = "jarvis"
-SAMPLE_RATE = 16000
+DEFAULT_SAMPLE_RATE = 16000
 
 
 class JarvisAssistant:
-    def __init__(self, model_path: Path | None = None):
+    def __init__(
+        self,
+        model_path: Path | None = None,
+        mic_device: int | None = None,
+        mic_name: str | None = None,
+        sample_rate: int | None = None,
+        debug_asr: bool = False,
+    ):
         self.model_path = model_path
+        self.mic_device = mic_device
+        self.mic_name = mic_name
+        self.sample_rate = sample_rate
+        self.debug_asr = debug_asr
+
         self.audio_queue: queue.Queue[bytes] = queue.Queue()
         self.tts_queue: queue.Queue[str] = queue.Queue()
         self.stop_event = threading.Event()
@@ -49,6 +62,27 @@ class JarvisAssistant:
         self.recognizer: KaldiRecognizer | None = None
         self._initialize_voice_recognition()
 
+
+    def _resolve_input_device(self) -> int | None:
+        if self.mic_name:
+            devices = sd.query_devices()
+            for idx, dev in enumerate(devices):
+                if dev.get("max_input_channels", 0) > 0 and self.mic_name.lower() in str(dev.get("name", "")).lower():
+                    return idx
+        return self.mic_device
+
+    def _resolve_sample_rate(self, device_index: int | None) -> int:
+        if self.sample_rate:
+            return int(self.sample_rate)
+        if device_index is not None:
+            try:
+                dev: dict[str, Any] = sd.query_devices(device_index)
+                default_sr = dev.get("default_samplerate")
+                if default_sr:
+                    return int(default_sr)
+            except Exception:
+                pass
+        return DEFAULT_SAMPLE_RATE
 
     def trace_decision(self, user_said: str, tool: str, reason: str):
         print(f"user said: '{user_said}' so i will use {tool} to {reason}")
@@ -133,15 +167,22 @@ class JarvisAssistant:
         return candidates
 
     def _initialize_voice_recognition(self):
+        self.mic_device = self._resolve_input_device()
+        self.sample_rate = self._resolve_sample_rate(self.mic_device)
+
         for path in self._candidate_model_paths():
             if not (path.exists() and (path / "am").exists() and (path / "conf").exists()):
                 continue
             try:
                 self.model = Model(str(path))
-                self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
+                self.recognizer = KaldiRecognizer(self.model, self.sample_rate)
+                self.recognizer.SetWords(True)
                 self.voice_enabled = True
                 self.gui.set_mode("Listening for wake word")
-                self.gui.set_status(f"Voice ON. Listening for wake word '{WAKE_WORD}'.")
+                self.gui.set_status(
+                    f"Voice ON. Mic={self.mic_device if self.mic_device is not None else 'default'}, "
+                    f"sample_rate={self.sample_rate}. Listening for wake word '{WAKE_WORD}'."
+                )
                 return
             except Exception:
                 continue
@@ -159,20 +200,40 @@ class JarvisAssistant:
             print(status)
         self.audio_queue.put(bytes(indata))
 
+    def _handle_recognized_text(self, text: str):
+        if self.debug_asr:
+            print(f"[asr-final] {text}")
+        self.gui.root.after(0, self.gui.set_heard, f"Heard: {text}")
+        self._route_speech(text)
+
     def _listen_loop(self):
         if not self.recognizer:
             return
         try:
-            with sd.RawInputStream(samplerate=SAMPLE_RATE, blocksize=8000, dtype="int16", channels=1, callback=self._audio_callback):
+            with sd.RawInputStream(
+                samplerate=self.sample_rate,
+                blocksize=4000,
+                dtype="int16",
+                channels=1,
+                device=self.mic_device,
+                callback=self._audio_callback,
+            ):
                 while not self.stop_event.is_set():
                     data = self.audio_queue.get()
+
+                    # partial results improve wake-word responsiveness
                     if self.recognizer.AcceptWaveform(data):
                         result = json.loads(self.recognizer.Result())
                         text = result.get("text", "").strip().lower()
-                        if not text:
-                            continue
-                        self.gui.root.after(0, self.gui.set_heard, f"Heard: {text}")
-                        self._route_speech(text)
+                        if text:
+                            self._handle_recognized_text(text)
+                    else:
+                        partial = json.loads(self.recognizer.PartialResult()).get("partial", "").strip().lower()
+                        if partial and self.debug_asr:
+                            print(f"[asr-partial] {partial}")
+                        if partial and WAKE_WORD in partial and not self.awaiting_command:
+                            self.awaiting_command = True
+                            self.say("Yes sir?")
         except Exception:
             self.voice_enabled = False
             self.gui.root.after(0, self.gui.set_mode, "Voice OFF - manual mode")
@@ -182,7 +243,7 @@ class JarvisAssistant:
         cleaned = self.behavior.cleanup(text)
         if self.awaiting_command:
             self.awaiting_command = False
-            if cleaned:
+            if cleaned and cleaned != WAKE_WORD:
                 threading.Thread(target=self.behavior.handle_command, args=(cleaned,), daemon=True).start()
             return
 
@@ -207,9 +268,29 @@ class JarvisAssistant:
 def parse_args():
     parser = argparse.ArgumentParser(description="Free local Jarvis assistant")
     parser.add_argument("--model-path", type=Path, default=None, help="Path to Vosk model folder (contains am/ and conf/)")
+    parser.add_argument("--mic-device", type=int, default=None, help="Microphone input device index from sounddevice query_devices()")
+    parser.add_argument("--mic-name", type=str, default=None, help="Microphone name substring (case-insensitive), e.g. 'headset'")
+    parser.add_argument("--sample-rate", type=int, default=None, help="Input sample rate for recognition (defaults to selected mic native rate)")
+    parser.add_argument("--debug-asr", action="store_true", help="Print partial/final speech recognition results to terminal")
+    parser.add_argument("--list-mics", action="store_true", help="List input microphone devices and exit")
     return parser.parse_args()
+
+
+def list_mics() -> None:
+    for idx, dev in enumerate(sd.query_devices()):
+        if dev.get("max_input_channels", 0) > 0:
+            print(f"[{idx}] {dev.get('name')} (inputs={dev.get('max_input_channels')}, default_sr={dev.get('default_samplerate')})")
 
 
 if __name__ == "__main__":
     args = parse_args()
-    JarvisAssistant(model_path=args.model_path).run()
+    if args.list_mics:
+        list_mics()
+        raise SystemExit(0)
+    JarvisAssistant(
+        model_path=args.model_path,
+        mic_device=args.mic_device,
+        mic_name=args.mic_name,
+        sample_rate=args.sample_rate,
+        debug_asr=args.debug_asr,
+    ).run()

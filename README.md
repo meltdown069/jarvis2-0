@@ -124,6 +124,15 @@ Optional custom path:
 python assistant.py --model-path "C:/path/to/vosk-model-small-en-us-0.15"
 ```
 
+For better speech recognition on your machine:
+
+```bash
+python assistant.py --list-mics
+python assistant.py --mic-device 2 --sample-rate 16000
+python assistant.py --mic-name "headset"
+python assistant.py --mic-name "realtek" --debug-asr
+```
+
 ## Human-like action behavior
 
 For `open <website>` and `search <query>`, Jarvis now:
@@ -160,3 +169,14 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 
 - Jarvis can help with **defensive/ethical security guidance** (hardening, legal lab learning, checklists).
 - Jarvis does **not** provide unauthorized or harmful hacking instructions.
+
+
+## Speech recognition quality tips
+
+- Jarvis now uses partial recognition to detect wake word faster.
+- If speech is still inaccurate, list microphones and pick the correct `--mic-device`.
+- By default Jarvis now uses your selected microphone's native sample rate for better accuracy.
+- You can still override with `--sample-rate 16000` (or your device's best value).
+- You can pick a microphone by name with `--mic-name "<part-of-device-name>"`.
+- Use `--debug-asr` to print partial/final recognition text in terminal for tuning.
+- Use the larger Vosk model (`vosk-model-en-us-0.22`) for better accuracy if your machine can handle it.
