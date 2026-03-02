@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jarvis 2.0 | Sparsh Rathore</title>
+    <title>Jarvis 2.0 | Project Overview</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -13,122 +13,103 @@
         body {
             font-family: 'Inter', sans-serif;
             color: #ffffff;
-            /* Darkened gradient: restricted to deep blacks and dark blues only */
-            background: linear-gradient(-45deg, #05070a, #0d1117, #011627, #0d1117);
-            background-size: 400% 400%;
-            animation: gradientMove 12s ease infinite;
+            background: #05070a; /* Solid dark start for instant readability */
+            background: radial-gradient(circle at center, #0d1117 0%, #05070a 100%);
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Scanline effect - lowered opacity to keep text sharp */
+        /* Scanline HUD Effect */
         body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
-                        linear-gradient(90deg, rgba(0, 198, 255, 0.02), rgba(0, 0, 0, 0), rgba(0, 198, 255, 0.02));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
             z-index: 10;
-            background-size: 100% 3px, 4px 100%;
+            background-size: 100% 4px;
             pointer-events: none;
+            opacity: 0.5;
         }
 
         .fade { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
         .fade.show { opacity: 1; transform: translateY(0); }
 
-        .container { max-width: 850px; margin: 0 auto; padding: 20px; position: relative; z-index: 5; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 5; }
 
-        header { text-align: center; padding: 50px 20px; }
+        header { text-align: center; padding: 40px 0; }
         
         .jarvis-logo {
-            width: 140px;
-            filter: drop-shadow(0 0 10px #00c6ff);
-            margin-bottom: 25px;
+            width: 120px;
+            filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.5));
+            margin-bottom: 20px;
         }
 
         h1 { 
             font-family: 'Orbitron', sans-serif;
-            font-size: clamp(2rem, 8vw, 3.5rem); 
-            letter-spacing: 5px;
+            font-size: 3rem; 
+            letter-spacing: 4px;
             color: #fff;
-            text-shadow: 0 0 15px rgba(0, 198, 255, 0.6);
-            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 198, 255, 0.4);
         }
 
-        .subtitle { 
+        .status-line { 
             font-family: 'JetBrains Mono', monospace; 
             color: #00c6ff; 
-            text-shadow: 0 0 5px rgba(0, 198, 255, 0.5);
-            letter-spacing: 2px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-transform: uppercase;
         }
 
-        .gif-container {
+        .gif-frame {
             width: 100%;
             border: 1px solid rgba(0, 198, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 30px 0;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
-        }
-        .gif-container img { width: 100%; display: block; opacity: 0.9; }
-
-        .content-card {
-            background: rgba(13, 17, 23, 0.7);
-            border: 1px solid rgba(48, 54, 61, 0.8);
-            border-left: 3px solid #00c6ff;
-            padding: 35px;
-            border-radius: 0 10px 10px 0;
-            margin-bottom: 35px;
-        }
-
-        h2 { 
-            font-family: 'Orbitron', sans-serif; 
-            color: #00c6ff; 
-            text-shadow: 0 0 8px rgba(0, 198, 255, 0.4);
-            margin-bottom: 15px; 
-            font-size: 1.3rem; 
-        }
-        
-        p { line-height: 1.7; color: #d1d5db; font-size: 1.05rem; margin-bottom: 15px; }
-
-        .repo-box {
-            background: rgba(1, 4, 9, 0.8);
-            padding: 20px;
             border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            border: 1px solid #30363d;
-            text-align: center;
-            margin: 30px 0;
+            overflow: hidden;
+            margin: 40px 0;
+            background: #000;
         }
-        .repo-box a { color: #58a6ff; text-decoration: none; word-break: break-all; font-size: 0.9rem; }
+        .gif-frame img { width: 100%; display: block; opacity: 0.85; }
 
-        .social-bar { text-align: center; padding: 15px; margin-bottom: 40px; }
-        .social-bar a {
+        .bio-card {
+            background: rgba(13, 17, 23, 0.6);
+            border-left: 2px solid #00c6ff;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        h2 { font-family: 'Orbitron', sans-serif; color: #00c6ff; font-size: 1.2rem; margin-bottom: 15px; }
+        p { line-height: 1.8; color: #c9d1d9; font-size: 1.05rem; margin-bottom: 15px; }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .social-links a {
             color: #fff;
             text-decoration: none;
-            margin: 0 15px;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
-            border-bottom: 1px solid transparent;
+            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: 0.3s;
         }
-        .social-bar a:hover { color: #00c6ff; border-bottom: 1px solid #00c6ff; }
+        .social-links a:hover {
+            background: rgba(0, 198, 255, 0.1);
+            border-color: #00c6ff;
+            color: #00c6ff;
+        }
 
         footer {
             text-align: center;
             padding: 60px 20px;
-            border-top: 1px solid rgba(48, 54, 61, 0.5);
-            background: rgba(5, 7, 10, 0.9);
+            border-top: 1px solid #161b22;
+            font-size: 0.8rem;
+            color: #8b949e;
         }
         footer a { color: #00c6ff; text-decoration: none; }
-        .cc-icons { margin-top: 15px; opacity: 0.5; }
-        .cc-icons img { width: 20px; margin: 0 3px; }
     </style>
 </head>
 <body>
@@ -137,38 +118,32 @@
     <header class="fade">
         <img src="jarvis-logo.png" alt="Jarvis Logo" class="jarvis-logo">
         <h1>JARVIS 2.0</h1>
-        <p class="subtitle">> AUTH_USER: SPARSH_RATHORE // STATUS: ONLINE</p>
+        <p class="status-line">> System initialized // User: Sparsh Rathore</p>
     </header>
 
-    <div class="gif-container fade">
-        <img src="https://giffiles.alphacoders.com/212/212508.gif" alt="Iron Man HUD Animation">
+    <div class="gif-frame fade">
+        <img src="https://giffiles.alphacoders.com/212/212508.gif" alt="Interface HUD">
     </div>
 
-    <section class="content-card fade">
-        <h2>About the Project</h2>
+    <section class="bio-card fade">
+        <h2>About</h2>
         <p>
-            I've always been obsessed with the idea of having my own AI assistant, so I started building Jarvis 2.0. 
-            It's a Python-based desktop assistant that uses Gemini 2.5 Flash to handle voice commands and "see" my screen in real-time.
+            This project is inspired by J.A.R.V.I.S from Iron Man. Jarvis2.0 is a personal exploration into desktop automation, voice processing, and real-time vision.
         </p>
         <p>
-            It’s far from finished, but I’m constantly pushing updates to make it faster and more capable. This is my attempt at bringing a bit of sci-fi into the real world.
+            The goal is to create an AI that doesn't just respond to prompts, but actually understands the user, I want it to do so many other things and yeah they are coming, you will just have to wait for it. You can message me on my socials tho I'm always online.
         </p>
     </section>
 
-    <div class="repo-box fade">
-        <p style="color: #8b949e; margin-bottom: 8px; font-size: 0.8rem;">ACCESS SOURCE CODE:</p>
-        <a href="https://github.com/meltdown069/jarvis2-0">https://github.com/meltdown069/jarvis2-0.git</a>
-    </div>
-
-    <div class="social-bar fade">
-        <a href="https://www.instagram.com/fire.drgon" target="_blank">INSTAGRAM</a>
-        <a href="https://github.com/meltdown069" target="_blank">GITHUB</a>
+    <div class="social-links fade">
+        <a href="https://www.instagram.com/fire.drgon">INSTAGRAM</a>
+        <a href="https://github.com/meltdown069">GITHUB</a>
     </div>
 </div>
 
 <footer>
     <div class="fade">
-        <p style="margin-bottom: 12px; font-weight: bold; color: #d29922; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 2px;">DEVELOPMENT_PHASE: v2.0-BETA</p>
+        <p style="margin-bottom: 12px; font-weight: bold; color: #d29922; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 2px;">UNDER DEVELOPMENT MAJOR UPDATES COMING SOON!</p>
         
         <p style="font-size: 0.8rem; color: #8b949e;">
             <a href="https://github.com/meltdown069">JARVIS2-0</a> © 2026 by 
