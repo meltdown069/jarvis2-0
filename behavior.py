@@ -155,10 +155,14 @@ class BehaviorEngine:
             self.app.say(f"I can speak in: {langs}")
             return
 
-        if any(k in cmd for k in ["hack", "exploit", "payload", "sql injection", "ddos", "phishing"]):
-            self._trace(command, "security_guard", "provide defensive-only cybersecurity guidance")
-            self.app.say("I can help with ethical, defensive security only. I will not provide harmful or unauthorized hacking steps.")
-            self.app.say("I can help with security checklists, hardening, vulnerability management, and CTF-style legal learning.")
+        blocked_security_terms = [
+            "hack", "hacking", "exploit", "payload", "sql injection", "ddos", "phishing",
+            "hydra", "sqlmap", "zphisher", "metasploit", "meterpreter", "bruteforce", "brute force",
+        ]
+        if any(k in cmd for k in blocked_security_terms):
+            self._trace(command, "security_guard", "block offensive or unauthorized cybersecurity actions")
+            self.app.say("I can only help with defensive, authorized security work. I cannot run or automate attack tools.")
+            self.app.say("If you want, I can help with safe tasks like system hardening checks, patch audit steps, log review, and legal lab setup guidance.")
             return
 
         # whatsapp task: open whatsapp and search <name> contact and if you find her send her a hi
