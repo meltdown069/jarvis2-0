@@ -56,6 +56,7 @@ class JarvisAssistant:
 
     def say(self, text: str):
         self.gui.set_status(f"Jarvis: {text}")
+        self.gui.pulse_speaking(0.85)
         self.tts_queue.put(text)
 
     def _tts_worker(self):
@@ -65,10 +66,13 @@ class JarvisAssistant:
             except queue.Empty:
                 continue
             try:
+                self.gui.root.after(0, self.gui.set_speaking, True)
                 self.tts_engine.say(text)
                 self.tts_engine.runAndWait()
             except Exception:
                 continue
+            finally:
+                self.gui.root.after(0, self.gui.set_speaking, False)
 
     def _candidate_model_paths(self) -> list[Path]:
         candidates = []

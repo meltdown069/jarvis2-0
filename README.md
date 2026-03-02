@@ -60,6 +60,8 @@ Compound commands now work:
 
 The overlay has a higher-fidelity Jarvis look with:
 - animated central orb,
+- floating particle field around orb,
+- voice-reactive waveform rings while Jarvis speaks,
 - neon title and mode badge,
 - conversation panel,
 - transcript panel,
