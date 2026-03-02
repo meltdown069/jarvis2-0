@@ -155,16 +155,28 @@ class BehaviorEngine:
             self.app.say(f"I can speak in: {langs}")
             return
 
-        defensive_tools = ["nmap", "ncat", "burpsuite", "burp suite"]
+        if cmd in {"security tools", "cyber tools", "infosec tools", "what security tools do you support"}:
+            self._trace(command, "defensive_security_catalog", "list supported defensive security tools")
+            self.app.say(
+                "For authorized defensive workflows, I can help with nmap, ncat, wireshark, nikto, skipfish, wapiti, owasp zap, burp suite, autopsy, and binwalk."
+            )
+            self.app.say("Tell me a defensive goal and I will suggest safe next steps.")
+            return
+
+        defensive_tools = [
+            "nmap", "ncat", "wireshark", "nikto", "skipfish", "wapiti", "owasp zap", "zap", "burpsuite", "burp suite", "autopsy", "binwalk",
+        ]
         if any(k in cmd for k in defensive_tools):
             self._trace(command, "defensive_security_help", "provide authorized defensive guidance for security tooling")
-            self.app.say("I can help with defensive and authorized use of nmap, ncat, and Burp Suite on your own systems.")
-            self.app.say("Tell me your goal, like host discovery, open-port inventory, service banner check, or proxy setup, and I will guide step by step.")
+            self.app.say(
+                "I can help with defensive and authorized use of tools like nmap, ncat, wireshark, nikto, wapiti, zap, burp suite, autopsy, and binwalk on your own systems."
+            )
+            self.app.say("Tell me your objective, like host discovery, service inventory, traffic inspection, or vulnerability review, and I will guide step by step.")
             return
 
         blocked_security_terms = [
             "hack", "hacking", "exploit", "payload", "sql injection", "ddos", "phishing",
-            "hydra", "sqlmap", "zphisher", "metasploit", "meterpreter", "bruteforce", "brute force",
+            "hydra", "sqlmap", "zphisher", "metasploit", "meterpreter", "bruteforce", "brute force", "mimikatz", "aircrack", "reaver", "john the ripper", "hashcat", "xsspy",
         ]
         if any(k in cmd for k in blocked_security_terms):
             self._trace(command, "security_guard", "block offensive or unauthorized cybersecurity actions")

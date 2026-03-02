@@ -1,7 +1,7 @@
 # Jarvis 2.0 (Free Local Desktop Assistant)
 
 This project gives you a **free, local Jarvis-style assistant** with:
-- an always-on-top hi-fi styled overlay window,
+- a hi-fi styled overlay window with optional pin-on-top,
 - wake word listening for **"jarvis"**,
 - short spoken replies,
 - opening applications,
@@ -37,6 +37,7 @@ Commands after wake word:
 - `speak in hindi`
 - `set language to spanish`
 - `what languages do you speak`
+- `security tools` (lists defensive tools Jarvis can guide you with)
 - `open notepad and then open chrome and then search tech news`
 - terminal debug trace: `user said: ... so i will use ...` for each command
 - `open whatsapp and search gauri contact and if you find her send her a hi`
@@ -176,9 +177,9 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 ## Security scope
 
 - Jarvis can help with **defensive/ethical security guidance** (hardening, legal lab learning, checklists).
+- Jarvis can assist with **authorized defensive workflows** using tools like nmap, ncat, wireshark, nikto, skipfish, wapiti, OWASP ZAP, Burp Suite, Autopsy, and Binwalk.
 - Jarvis does **not** provide unauthorized or harmful hacking instructions.
-- Jarvis will not execute or automate offensive tools/flows (for example phishing, brute-force, exploit runners, or attack chains).
-- Jarvis can still assist with **authorized defensive workflows** using tools like nmap, ncat, and Burp Suite.
+- Jarvis will not execute or automate offensive tools/flows (for example phishing, brute-force, exploit runners, credential theft, or attack chains).
 
 
 ## Speech recognition quality tips
