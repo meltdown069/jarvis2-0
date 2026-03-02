@@ -33,6 +33,7 @@ Commands after wake word:
 - `what do you remember`
 
 - `run pwd`
+- `open notepad and then open chrome and then search ai news`
 
 Natural phrases also work:
 - `hey jarvis search youtube.com`
@@ -130,3 +131,9 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 
 - If Jarvis hits an obstacle (app/command fails), it asks you what to do next and continues based on your answer.
 - Jarvis stores memory in `jarvis_memory.json` (notes + preferences such as Chrome profile).
+
+
+## Task chains
+
+- Jarvis can execute chained tasks separated by `and then`.
+- If blocked in a step, Jarvis asks what to do and continues from your answer.

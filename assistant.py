@@ -372,6 +372,18 @@ class JarvisAssistant:
             threading.Thread(target=self.open_website_human_like, args=(payload, profile), daemon=True).start()
         return True
 
+    def _run_chained_tasks(self, command: str) -> bool:
+        if " and then " not in command:
+            return False
+        steps = [part.strip() for part in command.split(" and then ") if part.strip()]
+        if len(steps) < 2:
+            return False
+        self.say(f"Understood sir. I will execute {len(steps)} steps.")
+        for idx, step in enumerate(steps, start=1):
+            self.say(f"Step {idx}: {step}")
+            self.handle_command(step)
+        return True
+
     def handle_command(self, command: str) -> None:
         command = self._cleanup_command_text(command)
         if not command:
@@ -379,6 +391,9 @@ class JarvisAssistant:
         if self._maybe_handle_obstacle_followup(command):
             return
         if self._maybe_handle_profile_followup(command):
+            return
+
+        if self._run_chained_tasks(command):
             return
 
         if command in {"time", "what is the time", "what s the time", "tell me the time"}:
@@ -424,7 +439,10 @@ class JarvisAssistant:
                     self.say("I see multiple Chrome profiles possible. Which one should I open: profile 1, profile 2, or default?")
                 return
             self._start_task(f"open {target}")
-            self.say(self.open_application(target))
+            open_msg = self.open_application(target)
+            self.say(open_msg)
+            if open_msg.startswith("Opening") or open_msg.startswith("Trying"):
+                self._finish_task("Task completed sir.")
             return
 
         if command.startswith("search "):
@@ -448,11 +466,16 @@ class JarvisAssistant:
                 self.pending_action = ("run_cmd", cmd_to_run)
                 self.awaiting_obstacle_resolution = True
                 self.say("I hit an obstacle. Tell me an alternative command or say cancel.")
+            else:
+                self._finish_task("Command done sir.")
             return
 
         normalized = self._normalize_open_target(command)
         if normalized and len(normalized.split()) <= 3:
-            self.say(self.open_application(normalized))
+            open_msg = self.open_application(normalized)
+            self.say(open_msg)
+            if open_msg.startswith("Opening") or open_msg.startswith("Trying"):
+                self._finish_task("Task completed sir.")
             return
 
         self.say("Sorry sir, I did not get that. Could you rephrase?")
