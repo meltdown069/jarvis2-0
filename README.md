@@ -5,6 +5,7 @@ This project gives you a **free, local Jarvis-style assistant** with:
 - wake word listening for **"jarvis"**,
 - short spoken replies,
 - opening applications,
+- multilingual speaking (voice language switching based on installed TTS voices),
 - running terminal commands,
 - slow human-like browser search/open automation (mouse + keyboard control).
 
@@ -33,6 +34,9 @@ Commands after wake word:
 - `what do you remember`
 
 - `run pwd`
+- `speak in hindi`
+- `set language to spanish`
+- `what languages do you speak`
 - `open notepad and then open chrome and then search ai news`
 
 Natural phrases also work:
@@ -148,3 +152,9 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 
 - Jarvis can execute chained tasks separated by `and then`.
 - If blocked in a step, Jarvis asks what to do and continues from your answer.
+
+
+## Security assistant scope
+
+- Jarvis can help with **defensive/ethical security guidance** (hardening, legal lab learning, checklists).
+- Jarvis does **not** provide unauthorized or harmful hacking instructions.

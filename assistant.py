@@ -35,7 +35,10 @@ class JarvisAssistant:
         self.behavior = BehaviorEngine(self)
 
         self.tts_engine = pyttsx3.init()
+        self.current_language = "english"
         self.tts_engine.setProperty("rate", 178)
+        pref_lang = self.memory.get_pref("language") or "english"
+        self.set_tts_language(pref_lang, announce=False)
         threading.Thread(target=self._tts_worker, daemon=True).start()
 
         self.gui = JarvisGUI(self._on_manual_command)
@@ -73,6 +76,42 @@ class JarvisAssistant:
                 continue
             finally:
                 self.gui.root.after(0, self.gui.set_speaking, False)
+
+    def available_tts_languages(self) -> list[str]:
+        voices = self.tts_engine.getProperty("voices") or []
+        found = set()
+        for v in voices:
+            blob = f"{getattr(v, 'name', '')} {getattr(v, 'id', '')}".lower()
+            for lang in ["english", "hindi", "spanish", "french", "german", "italian", "japanese", "korean", "chinese", "arabic", "russian", "portuguese"]:
+                if lang in blob:
+                    found.add(lang)
+        if not found:
+            found.add("english")
+        return sorted(found)
+
+    def set_tts_language(self, language: str, announce: bool = True) -> bool:
+        target = language.strip().lower()
+        aliases = {
+            "en": "english", "eng": "english", "hindi": "hindi", "hi": "hindi",
+            "es": "spanish", "sp": "spanish", "fr": "french", "de": "german",
+            "it": "italian", "ja": "japanese", "jp": "japanese", "ko": "korean",
+            "zh": "chinese", "cn": "chinese", "ar": "arabic", "ru": "russian", "pt": "portuguese",
+        }
+        target = aliases.get(target, target)
+        voices = self.tts_engine.getProperty("voices") or []
+        for v in voices:
+            blob = f"{getattr(v, 'name', '')} {getattr(v, 'id', '')}".lower()
+            if target in blob:
+                self.tts_engine.setProperty("voice", v.id)
+                self.current_language = target
+                self.memory.set_pref("language", target)
+                if announce:
+                    self.say(f"Language switched to {target} sir")
+                return True
+        if announce:
+            langs = ", ".join(self.available_tts_languages())
+            self.say(f"I could not find {target}. Available: {langs}")
+        return False
 
     def _candidate_model_paths(self) -> list[Path]:
         candidates = []

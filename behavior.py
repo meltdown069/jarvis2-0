@@ -70,6 +70,25 @@ class BehaviorEngine:
             self.app.say("I am Jarvis, your local assistant. I can open apps, search, type, run commands, and remember notes.")
             return
 
+        # Language controls
+        lang_match = re.match(r"^(set|change|switch)\s+(language\s+to\s+)?([a-z]+)$", cmd)
+        if lang_match:
+            self.app.set_tts_language(lang_match.group(3))
+            return
+        if cmd.startswith("speak in "):
+            self.app.set_tts_language(cmd.replace("speak in ", "", 1).strip())
+            return
+        if cmd in {"what languages do you speak", "which languages do you speak", "languages", "list languages"}:
+            langs = ", ".join(self.app.available_tts_languages())
+            self.app.say(f"I can speak in: {langs}")
+            return
+
+        # Safe cybersecurity assistant behavior
+        if any(k in cmd for k in ["hack", "exploit", "payload", "sql injection", "ddos", "phishing"]):
+            self.app.say("I can help with ethical, defensive security only. I will not provide harmful or unauthorized hacking steps.")
+            self.app.say("I can help with security checklists, hardening, vulnerability management, and CTF-style legal learning.")
+            return
+
         mem = re.match(r"^remember\s+(.+)$", cmd)
         if mem:
             note = mem.group(1).strip()
