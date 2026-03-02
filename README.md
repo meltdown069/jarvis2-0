@@ -165,7 +165,7 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 - If blocked in a step, Jarvis asks what to do and continues from your answer.
 
 
-## Security assistant scope
+## Security scope
 
 - Jarvis can help with **defensive/ethical security guidance** (hardening, legal lab learning, checklists).
 - Jarvis does **not** provide unauthorized or harmful hacking instructions.
