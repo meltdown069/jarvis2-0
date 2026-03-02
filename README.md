@@ -180,6 +180,7 @@ If GUI automation fails/unavailable, it falls back to normal browser open.
 - Jarvis can assist with **authorized defensive workflows** using tools like nmap, ncat, wireshark, nikto, skipfish, wapiti, OWASP ZAP, Burp Suite, Autopsy, and Binwalk.
 - Jarvis does **not** provide unauthorized or harmful hacking instructions.
 - Jarvis will not execute or automate offensive tools/flows (for example phishing, brute-force, exploit runners, credential theft, or attack chains).
+- Requests for offensive SQLi tooling (like sqlmap exploitation) are blocked; Jarvis redirects to defensive SQL injection prevention guidance.
 
 
 ## Speech recognition quality tips

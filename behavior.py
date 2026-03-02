@@ -174,6 +174,12 @@ class BehaviorEngine:
             self.app.say("Tell me your objective, like host discovery, service inventory, traffic inspection, or vulnerability review, and I will guide step by step.")
             return
 
+        if "sqlmap" in cmd:
+            self._trace(command, "security_guard_sqlmap", "decline offensive sqlmap usage and redirect to defensive guidance")
+            self.app.say("I can’t help run sqlmap attacks or automate SQL injection exploitation.")
+            self.app.say("I can help you with defensive SQL injection prevention: parameterized queries, input validation, least-privilege DB users, and safe test checklists for your own app.")
+            return
+
         blocked_security_terms = [
             "hack", "hacking", "exploit", "payload", "sql injection", "ddos", "phishing",
             "hydra", "sqlmap", "zphisher", "metasploit", "meterpreter", "bruteforce", "brute force", "mimikatz", "aircrack", "reaver", "john the ripper", "hashcat", "xsspy",
