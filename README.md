@@ -72,6 +72,7 @@ The overlay has a higher-fidelity Jarvis look with:
 - conversation panel,
 - transcript panel,
 - command console input.
+- window is **not always-on-top by default**; use the `PIN ON/PIN OFF` button in the title bar whenever you want to pin/unpin it.
 
 
 ## File structure (modularized)

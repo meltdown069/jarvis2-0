@@ -13,7 +13,8 @@ class JarvisGUI:
         self.root.title("JARVIS")
         self.root.geometry("920x560+20+20")
         self.root.configure(bg="#020914")
-        self.root.attributes("-topmost", True)
+        self.always_on_top = False
+        self.root.attributes("-topmost", self.always_on_top)
 
         self.status_var = tk.StringVar(value="Booting systems…")
         self.input_var = tk.StringVar()
@@ -32,6 +33,21 @@ class JarvisGUI:
         topbar.pack(fill="x", padx=12, pady=(10, 4))
         tk.Label(topbar, text="J.A.R.V.I.S", fg="#FFBF7A", bg="#040E1D", font=("Segoe UI", 14, "bold")).pack(side="left")
         tk.Label(topbar, text="LOCAL MODE", fg="#FFD7A8", bg="#4A2C12", padx=10, pady=3, font=("Segoe UI", 9, "bold")).pack(side="right")
+
+        self.pin_button = tk.Button(
+            topbar,
+            text="PIN OFF",
+            command=self.toggle_always_on_top,
+            bg="#1B2A3D",
+            fg="#D9E8FF",
+            activebackground="#274261",
+            activeforeground="#FFFFFF",
+            relief="flat",
+            padx=10,
+            pady=3,
+            font=("Segoe UI", 9, "bold"),
+        )
+        self.pin_button.pack(side="right", padx=(0, 8))
 
         body = tk.Frame(shell, bg="#040E1D")
         body.pack(fill="both", expand=True, padx=10, pady=8)
@@ -133,6 +149,11 @@ class JarvisGUI:
         # decay speaking level (so voice wave fades)
         self.speaking_level = max(0.0, self.speaking_level - 0.035)
         self.root.after(33, self._animate_scene)
+
+    def toggle_always_on_top(self):
+        self.always_on_top = not self.always_on_top
+        self.root.attributes("-topmost", self.always_on_top)
+        self.pin_button.configure(text="PIN ON" if self.always_on_top else "PIN OFF")
 
     def set_speaking(self, active: bool):
         self.speaking_level = 1.0 if active else max(self.speaking_level, 0.2)
