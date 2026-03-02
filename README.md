@@ -25,6 +25,9 @@ Commands after wake word:
 - `open notepad and type i am cool`
 - `open cmd and type whoami`
 - `what is the time`
+
+- `who are you`
+- `what is on my screen` (Jarvis will ask you to describe and guide next actions)
 - `run pwd`
 
 Natural phrases also work:
@@ -39,6 +42,13 @@ App names are normalized, so `open Notepad`, `open notepad`, and bare `notepad` 
 Compound commands now work:
 - `open notepad and type i am cool`
 - `open cmd and type whoami`
+
+
+### Chatty + self-aware behavior
+
+- Jarvis now asks follow-up questions when needed (for example Chrome profile selection).
+- For Chrome actions (`search ...`, `open youtube.com`), Jarvis asks: profile 1, profile 2, or default.
+- After actions, Jarvis gives conversational follow-ups like asking what to do next on screen.
 
 ## UI
 
